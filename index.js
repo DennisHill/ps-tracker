@@ -1,6 +1,6 @@
 (function (global, factory) {
   if (typeof window != "undefined") {
-    if (window["define"] == "function") {
+    if (typeof window["define"] == "function") {
       window["define"](["./js/services/service_factory.js"], function (service) {
         return factory.call(window, service);
       });
