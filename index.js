@@ -386,7 +386,7 @@
         callback
       );
     };
-    return ExtraDataGetter(ticketNo);
+    return new ExtraDataGetter(ticketNo);
   }
 
   function createTaskGetter(ticketNo) {
