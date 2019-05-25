@@ -1,8 +1,10 @@
 (function (global, factory) {
   if (typeof window != "undefined") {
     if (typeof window["define"] == "function") {
-      window["define"](["./js/services/service_factory.js"], function (service) {
-        return factory.call(window, service);
+      window["define"](function () {
+        return function () {
+          factory.call(window, service);
+        };
       });
     } else {
       /** proudsmart手机端口应用入口 */
@@ -10,11 +12,9 @@
     }
   }
   if (typeof module != "undefined") {
-    const pathLib = require("path");
-    const services = require(pathLib.resolve(
-      "./js/services/service_factory.js"
-    ));
-    module.exports = factory.call(global, services);
+    module.exports = function (services) {
+      factory.call(global, services)
+    };
   }
 })(this, function (service) {
   var createAjax,
