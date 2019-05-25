@@ -8,14 +8,13 @@
       /** proudsmart手机端口应用入口 */
       window.createTracker = factory.call(window, window.common);
     }
-  } else {
-    if (module != null) {
-      const pathLib = require("path");
-      const services = require(pathLib.resolve(
-        "./js/services/service_factory.js"
-      ));
-      module.exports = factory.call(global, services);
-    }
+  }
+  if (typeof module != "undefined") {
+    const pathLib = require("path");
+    const services = require(pathLib.resolve(
+      "./js/services/service_factory.js"
+    ));
+    module.exports = factory.call(global, services);
   }
 })(this, function (service) {
   var createAjax,
