@@ -439,8 +439,8 @@
         })
       );
     };
-    TaskGetter.prototype.getExtraData = function (ticketNo, callback) {
-      this.extraDataGetter.getExtraData(ticketNo, callback);
+    TaskGetter.prototype.getExtraData = function (ticketNo, ticketList, callback) {
+      this.extraDataGetter.getExtraData(ticketNo, ticketList, callback);
     };
     TaskGetter.prototype.getFlowChart = function (ticketNo, callback) {
       this.flowGetter.getFlowChart(ticketNo, callback);
