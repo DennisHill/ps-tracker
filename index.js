@@ -13,7 +13,7 @@
   }
   if (typeof module != "undefined") {
     module.exports = function (services) {
-      factory.call(global, services)
+      return factory.call(global, services)
     };
   }
 })(this, function (service) {
@@ -24,7 +24,7 @@
       return service;
     };
   } else {
-    createAjaxFn(service.origin);
+    createAjax = createAjaxFn(service.origin);
   }
 
   function stringify(obj) {
@@ -315,7 +315,7 @@
     return rs;
   };
 
-  function createTracker(ticketNo, appFutureImpl) {
+  function createTracker(ticketNo) {
     function Tracker(ticketNo) {
       this.ticketNo = ticketNo;
       this.taskGetter = createTaskGetter(ticketNo);
