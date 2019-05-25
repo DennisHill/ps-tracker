@@ -24,7 +24,11 @@
       return service;
     };
   } else {
-    createAjax = createAjaxFn(service.origin);
+    if (window.location.host == "localhost") {
+      createAjax = createAjaxFn(window.location.scheme + "://" + window.location.host + ":" + window.location.port);
+    } else {
+      createAjax = createAjaxFn(service.origin);
+    }
   }
 
   function stringify(obj) {
