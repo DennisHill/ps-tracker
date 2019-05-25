@@ -24,7 +24,7 @@
       return service;
     };
   } else {
-    if (window.location.host == "localhost") {
+    if (window.location.hostname == "localhost") {
       createAjax = createAjaxFn(window.location.scheme + "://" + window.location.host + ":" + window.location.port);
     } else {
       createAjax = createAjaxFn(service.origin);
