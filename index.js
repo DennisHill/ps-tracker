@@ -1,8 +1,8 @@
-(function (global, factory) {
+(function(global, factory) {
   if (typeof window != "undefined") {
     if (typeof window["define"] == "function") {
-      window["define"](function () {
-        return function () {
+      window["define"]([], function() {
+        return function() {
           factory.call(window, service);
         };
       });
@@ -12,20 +12,22 @@
     }
   }
   if (typeof module != "undefined") {
-    module.exports = function (services) {
-      return factory.call(global, services)
+    module.exports = function(services) {
+      return factory.call(global, services);
     };
   }
-})(this, function (service) {
+})(this, function(service) {
   var createAjax,
     isObject = isType("Object");
   if (typeof service.post == "function") {
-    createAjax = function () {
+    createAjax = function() {
       return service;
     };
   } else {
     if (window.location.hostname == "localhost") {
-      createAjax = createAjaxFn(window.location.protocol + "//" + window.location.host);
+      createAjax = createAjaxFn(
+        window.location.protocol + "//" + window.location.host
+      );
     } else {
       createAjax = createAjaxFn(service.origin);
     }
@@ -52,13 +54,13 @@
   }
 
   function isType(type) {
-    return function (target) {
+    return function(target) {
       return {}.toString.call(target) == "[object " + type + "]";
     };
   }
 
   function bind(target, fn) {
-    return function () {
+    return function() {
       return fn.apply(target, arguments);
     };
   }
@@ -75,8 +77,8 @@
       this.parents = parents || [];
       this.path = path || [];
     }
-    LoopItem.prototype.hasParent = function (parent) {
-      return this.parents.some(function (d) {
+    LoopItem.prototype.hasParent = function(parent) {
+      return this.parents.some(function(d) {
         return d == parent;
       });
     };
@@ -113,10 +115,10 @@
   function Time(time) {
     this.time = new Date(time);
   }
-  Time.prototype.getMonthDate = function () {
+  Time.prototype.getMonthDate = function() {
     return this.time.getMonth() + 1 + "-" + this.time.getDate();
   };
-  Time.prototype.getHourMin = function () {
+  Time.prototype.getHourMin = function() {
     return this.time.getHours() + ":" + this.time.getMinutes();
   };
 
@@ -124,9 +126,9 @@
     this.taskList = taskList;
     this.taskList.reverse();
   }
-  Template.prototype.render = function () {
+  Template.prototype.render = function() {
     return this.taskList.map(
-      bind(this, function (task) {
+      bind(this, function(task) {
         var dt = new Module(task.data);
         var render = task.render;
         return dt.decorate(
@@ -167,30 +169,30 @@
       this[i] = data[i];
     }
   }
-  Module.prototype.hasAttr = function (value) {
+  Module.prototype.hasAttr = function(value) {
     return this.findValue(value) == null;
   };
-  Module.prototype.isFirstTimeGenerated = function (value) {
+  Module.prototype.isFirstTimeGenerated = function(value) {
     return true;
   };
-  Module.prototype.createAttr = function (arr) {
+  Module.prototype.createAttr = function(arr) {
     var name = arr[0],
       value = arr[1];
     var val = findValue(this, value);
     val = val == null ? "-" : val.value;
     return "<p>" + name + " " + val + "</p>";
   };
-  Module.prototype.findAttr = function (arr) {
+  Module.prototype.findAttr = function(arr) {
     var name = arr[0],
       value = arr[1];
     var val = findValue(this, value);
     val = val == null ? "-" : val.value;
     return "<p>" + name + " : " + val + "</p>";
   };
-  Module.prototype.createTitle = function (title) {
+  Module.prototype.createTitle = function(title) {
     return "<div>" + title + "</div>";
   };
-  Module.prototype.createButton = function (arr) {
+  Module.prototype.createButton = function(arr) {
     var name = arr[0],
       value = arr[1];
     return (
@@ -201,34 +203,34 @@
       "</button>"
     );
   };
-  Module.prototype.findValue = function (value) {
+  Module.prototype.findValue = function(value) {
     value = findValue(this, value);
     value = value == null ? undefined : value.value;
     return value;
   };
-  Module.prototype.createText = function (arr) {
+  Module.prototype.createText = function(arr) {
     var name = arr[0],
       value = arr[1];
     return "<p>" + name + " " + value + "</p>";
   };
-  Module.prototype.createDic = function (arr) {
+  Module.prototype.createDic = function(arr) {
     var name = arr[0],
       value = arr[1];
     return "<p>" + name + " " + findValue(this, value) + "</p>";
   };
-  Module.prototype.createDicAttr = function (arr) {
+  Module.prototype.createDicAttr = function(arr) {
     var name = arr[0],
       value = arr[1];
     return "<p>" + name + " " + findValue(this, value) + "</p>";
   };
-  Module.prototype.getTaskJob = function () {
+  Module.prototype.getTaskJob = function() {
     var category = this.ticketTask.variables.ticket.category;
     if (new RegExp("310|320|330").test(category)) {
       return "计划实施";
     }
     return "综合处理";
   };
-  Module.prototype.getAppSource = function () {
+  Module.prototype.getAppSource = function() {
     var category = this.ticketTask.variables.ticket.category;
     if (new RegExp("310").test(category)) {
       return "智能检修";
@@ -238,11 +240,11 @@
     }
     return "状态维护标准";
   };
-  Module.prototype.decorate = function (dt) {
+  Module.prototype.decorate = function(dt) {
     dt.reverse();
     var handlerName = this.ticketTask.handlerName;
     return dt
-      .map(function (dt) {
+      .map(function(dt) {
         var time = new Time(dt.time);
         var arr = ['<div class="time">'];
         arr.push("<p>" + time.getMonthDate() + "</p>");
@@ -251,24 +253,24 @@
         arr.push('<span class="mui-icon mui-icon-person first-state"></span>');
         arr.push(
           '<span class="mui-pull-right origin-state">处理人：' +
-          handlerName +
-          "</span>"
+            handlerName +
+            "</span>"
         );
         arr.push(
           '<span class=" origin-state" style="width:100px;margin-left:20px">' +
-          dt.title +
-          "</span>"
+            dt.title +
+            "</span>"
         );
         arr.push('<div class="line-progress">');
         arr = arr.concat(dt.data);
         arr.push("</div>");
         return arr;
       })
-      .reduce(function (a, b) {
+      .reduce(function(a, b) {
         return a.concat(b);
       }, []);
   };
-  Module.prototype.createAlertAhead = function () {
+  Module.prototype.createAlertAhead = function() {
     var rs = [],
       alertItemList = this.findValue("alertItemList"),
       onlineRuleId = this.findValue("onlineRuleId");
@@ -279,7 +281,7 @@
         time: this.findValue("executeTime"),
         data: alertItemList
           .map(
-            bind(this, function (d) {
+            bind(this, function(d) {
               return [
                 this.createDic(["报警级别", "alertSeverity", d.severity]),
                 this.createDic(["报警级别", "appName", d.appName]),
@@ -287,13 +289,13 @@
               ];
             })
           )
-          .reduce(function (a, b) {
+          .reduce(function(a, b) {
             return a.concat(b);
           }, [])
       });
     } else if (onlineRuleId) {
       var itemList = this.onlineRule.itemList;
-      itemList = itemList.map(function (d) {
+      itemList = itemList.map(function(d) {
         return d.kpiThreshold;
       });
       rs.push({
@@ -302,7 +304,7 @@
         time: this.findValue("executeTime"),
         data: itemList
           .map(
-            bind(this, function (d) {
+            bind(this, function(d) {
               return [
                 this.createText(["报警类型", d.title]),
                 this.createDic(["报警级别", "alertSeverity", d.severity]),
@@ -311,7 +313,7 @@
               ];
             })
           )
-          .reduce(function (a, b) {
+          .reduce(function(a, b) {
             return a.concat(b);
           }, [])
       });
@@ -324,8 +326,8 @@
       this.ticketNo = ticketNo;
       this.taskGetter = createTaskGetter(ticketNo);
     }
-    Tracker.prototype.getTemplate = function (callback) {
-      this.getAllTasks(function (taskList) {
+    Tracker.prototype.getTemplate = function(callback) {
+      this.getAllTasks(function(taskList) {
         if (taskList == null) {
           return callback.call();
         }
@@ -334,14 +336,14 @@
         callback(str);
       });
     };
-    Tracker.prototype.getAllTasks = function (callback) {
+    Tracker.prototype.getAllTasks = function(callback) {
       this.taskGetter.getAllTasks(callback);
     };
     return new Tracker(ticketNo);
   }
 
   function findValueFromList(list, condition, getter) {
-    return list.reduce(function (a, b) {
+    return list.reduce(function(a, b) {
       if (a) {
         return a;
       }
@@ -355,22 +357,22 @@
       this.ajax = createAjax();
       this.flowGetter = createFlowGetter(ticketNo);
     }
-    TaskGetter.prototype.getByTicketNo = function (ticketNo, callback) {
+    TaskGetter.prototype.getByTicketNo = function(ticketNo, callback) {
       this.ajax.post(
         "ticketLogService.getByTicketNo",
         ticketNo,
-        bind(this, function (ticketList) {
-          this.getFlowChart(ticketNo, function (flowChart) {
+        bind(this, function(ticketList) {
+          this.getFlowChart(ticketNo, function(flowChart) {
             if (flowChart == null) {
               return callback.call();
             }
             ticketList = ticketList
-              .map(function (ticket) {
+              .map(function(ticket) {
                 var taskConfigName =
-                  ticket.ticketTask && ticket.ticketTask.taskConfigName,
+                    ticket.ticketTask && ticket.ticketTask.taskConfigName,
                   fd;
                 if (taskConfigName) {
-                  fd = flowChart.find(function (flow) {
+                  fd = flowChart.find(function(flow) {
                     return flow.content == taskConfigName;
                   });
                   if (fd) {
@@ -380,7 +382,7 @@
                 }
                 return;
               })
-              .filter(function (d) {
+              .filter(function(d) {
                 return d;
               });
             callback(ticketList);
@@ -388,19 +390,19 @@
         })
       );
     };
-    TaskGetter.prototype.getFlowChart = function (ticketNo, callback) {
+    TaskGetter.prototype.getFlowChart = function(ticketNo, callback) {
       this.flowGetter.getFlowChart(ticketNo, callback);
     };
-    TaskGetter.prototype.getAllTasks = function (callback) {
+    TaskGetter.prototype.getAllTasks = function(callback) {
       /** 目前只支持一个源头调用合并的情况 */
       this.getByTicketNo(
         ticketNo,
-        bind(this, function (ticketList) {
+        bind(this, function(ticketList) {
           if (ticketList == null) {
             return callback.call();
           }
           var sourceTicketNo = findValueFromList(
-            ticketList.map(function (t) {
+            ticketList.map(function(t) {
               return t.data;
             }),
             function condition(item) {
@@ -409,7 +411,7 @@
             }
           );
           if (sourceTicketNo) {
-            this.getByTicketNo(sourceTicketNo, function (list) {
+            this.getByTicketNo(sourceTicketNo, function(list) {
               list = list || [];
               callback(list.concat(ticketList));
             });
@@ -430,10 +432,10 @@
           fn.call(
             undefined,
             param,
-            function (val) {
+            function(val) {
               runSeq(inx + 1, val);
             },
-            function (e) {
+            function(e) {
               console.error(e);
               callback();
             }
@@ -450,10 +452,10 @@
       this.ticketNo = ticketNo;
       this.ajax = createAjax();
     }
-    FlowGetter.prototype.getFlowChart = function (ticketNo, callback) {
+    FlowGetter.prototype.getFlowChart = function(ticketNo, callback) {
       runBySequence(
         [
-          bind(this, function (ticketNo, next, error) {
+          bind(this, function(ticketNo, next, error) {
             this.ajax.post(
               "ticketTaskService.getTicket",
               ticketNo,
@@ -468,7 +470,7 @@
               }
             );
           }),
-          bind(this, function (ticketCategoryId, next, error) {
+          bind(this, function(ticketCategoryId, next, error) {
             this.ajax.post(
               "ticketCategoryService.getTicketCategoryById",
               ticketCategoryId,
@@ -476,8 +478,8 @@
                 if (d == null) {
                   error(
                     "工单种类号[" +
-                    ticketCategoryId +
-                    "]没对应的类型数据，可能已被删除。"
+                      ticketCategoryId +
+                      "]没对应的类型数据，可能已被删除。"
                   );
                 }
                 var workflowId = d.workflowId;
@@ -485,7 +487,7 @@
               }
             );
           }),
-          bind(this, function (workflowId, next) {
+          bind(this, function(workflowId, next) {
             this.ajax.post(
               "workflowService.getWorkflowById",
               workflowId,
@@ -501,14 +503,14 @@
             );
           })
         ],
-        bind(this, function (flowName) {
+        bind(this, function(flowName) {
           if (flowName == null) {
             return callback && callback.call();
           }
           this.ajax.post(
             "workflowDefinitionService.getWorkflowDefinitions",
             function success(flows) {
-              var flow = flows.find(function (flow) {
+              var flow = flows.find(function(flow) {
                   return flow.name == flowName;
                 }),
                 viewContent;
@@ -516,19 +518,19 @@
                 viewContent = parse(flow.viewContent);
                 callback(
                   viewContent &&
-                  viewContent.cells
-                  .filter(function (cell) {
-                    return (
-                      cell.type == "bpmn.Activity" &&
-                      cell.dataExtractExpression
-                    );
-                  })
-                  .map(function (cell) {
-                    return {
-                      content: cell.content,
-                      render: eval("(" + cell.dataExtractExpression + ")")
-                    };
-                  })
+                    viewContent.cells
+                      .filter(function(cell) {
+                        return (
+                          cell.type == "bpmn.Activity" &&
+                          cell.dataExtractExpression
+                        );
+                      })
+                      .map(function(cell) {
+                        return {
+                          content: cell.content,
+                          render: eval("(" + cell.dataExtractExpression + ")")
+                        };
+                      })
                 );
               } else {
                 callback();
@@ -548,7 +550,7 @@
     function Ajax(url) {
       this.url = url;
     }
-    Ajax.prototype.post = function (url, params, success, fail) {
+    Ajax.prototype.post = function(url, params, success, fail) {
       if (success == null && fail == null && typeof params == "function") {
         success = params;
         params = null;
@@ -562,7 +564,7 @@
       xhr.open("POST", this.url + "/api/rest/post/" + arr.join("/"));
       xhr.withCredentials = true;
       xhr.send(params || "[]");
-      xhr.onreadystatechange = function () {
+      xhr.onreadystatechange = function() {
         var data;
         if (xhr.readyState == 4) {
           data = parse(xhr.responseText);
