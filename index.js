@@ -345,44 +345,102 @@
     }, undefined);
   }
 
+  function createExtraDataGetter(ticketNo) {
+    function getDataSeries(arr, callback) {
+      var map = {};
+
+      function callSeries(inx) {
+        var fn = arr[inx];
+        if (fn) {
+          fn && fn.call(this, function (name, d) {
+            map[name] = d;
+            callSeries(inx + 1);
+          });
+        } else {
+          callback(map);
+        }
+      }
+      callSeries(0);
+    }
+
+    function ExtraDataGetter(ticketNo) {
+      this.ticketNo = ticketNo;
+      this.ajax = createAjax();
+    }
+    ExtraDataGetter.prototype.getExtraData = function (
+      ticketNo,
+      ticketList,
+      callback
+    ) {
+      getDataSeries(
+        [
+          bind(this, function (next) {
+            var params = {
+              ticketNo: ticketNo
+            }
+            this.ajax.post("deviceResumeUIService.getDeviceCheckTrustByCondition", params, function (d) {
+              next("trustDevice", d);
+            })
+          })
+        ],
+        callback
+      );
+    };
+    return ExtraDataGetter(ticketNo);
+  }
+
   function createTaskGetter(ticketNo) {
     function TaskGetter(ticketNo) {
       this.ticketNo = ticketNo;
       this.ajax = createAjax();
       this.flowGetter = createFlowGetter(ticketNo);
+      this.extraDataGetter = createExtraDataGetter(ticketNo);
     }
     TaskGetter.prototype.getByTicketNo = function (ticketNo, callback) {
       this.ajax.post(
         "ticketLogService.getByTicketNo",
         ticketNo,
         bind(this, function (ticketList) {
-          this.getFlowChart(ticketNo, function (flowChart) {
-            if (flowChart == null) {
-              return callback.call();
-            }
-            ticketList = ticketList
-              .map(function (ticket) {
-                var taskConfigName =
-                  ticket.ticketTask && ticket.ticketTask.taskConfigName,
-                  fd;
-                if (taskConfigName) {
-                  fd = flowChart.find(function (flow) {
-                    return flow.content == taskConfigName;
-                  });
-                  if (fd) {
-                    fd.data = ticket;
-                    return fd;
+          this.getExtraData(
+            ticketNo,
+            ticketList,
+            bind(this, function (extraData) {
+              this.getFlowChart(
+                ticketNo,
+                bind(this, function (flowChart) {
+                  if (flowChart == null) {
+                    return callback.call();
                   }
-                }
-                return;
-              })
-              .filter(function (d) {
-                return d;
-              });
-            callback(ticketList);
-          });
+                  ticketList = ticketList
+                    .map(function (ticket) {
+                      var taskConfigName =
+                        ticket.ticketTask && ticket.ticketTask.taskConfigName,
+                        fd;
+                      if (taskConfigName) {
+                        fd = flowChart.find(function (flow) {
+                          return flow.content == taskConfigName;
+                        });
+                        if (fd) {
+                          fd.data = ticket;
+                          fd.extra = extraData;
+                          return fd;
+                        }
+                      }
+                      return;
+                    })
+                    .filter(function (d) {
+                      return d;
+                    });
+                  callback(ticketList);
+                })
+              );
+            })
+          );
         })
       );
+    };
+    TaskGetter.prototype.getExtraData = function (ticketNo, callback) {
+      this.extraDataGetter.getExtraData(ticketNo, callback);
     };
     TaskGetter.prototype.getFlowChart = function (ticketNo, callback) {
       this.flowGetter.getFlowChart(ticketNo, callback);
