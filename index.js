@@ -421,8 +421,8 @@
                           return flow.content == taskConfigName;
                         });
                         if (fd) {
+                          ticket.extra = extraData;
                           fd.data = ticket;
-                          fd.extra = extraData;
                           return fd;
                         }
                       }
