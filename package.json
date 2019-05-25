@@ -1,6 +1,6 @@
 {
-  "name": "ps-tracker",
-  "version": "1.0.0",
+  "name": "proudsmart-tracker",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
