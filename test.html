@@ -1,10 +1,27 @@
 <html>
 
-<head></head>
+<head>
+    <script src="./ajax.js"></script>
+    <script src="./index.js"></script>
+    <script src="./service_factory.js"></script>
+</head>
 
 <body>
     <script>
-        console.log(window);
+        var ticketNo = "2019042314323100001";
+        var ajax = createAjaxFn("http://localhost:8080")();
+        var tracker = createTracker($services);
+        var ins = tracker(ticketNo);
+
+        function loginSuccess(user) {
+            console.log(user);
+            ins.getAllTasks(function (taskList) {
+                console.log(taskList);
+            })
+        }
+        ajax.post("userLoginUIService.getCurrentUser", [], loginSuccess, function fail() {
+            ajax.post("userLoginUIService.login", ["baowu_steel", "abc123"], loginSuccess)
+        })
     </script>
 </body>
 

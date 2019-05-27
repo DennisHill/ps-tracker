@@ -1,8 +1,13 @@
 (function (global, factory) {
   if (typeof window != "undefined") {
-    if (typeof window["define"] != "function") {
+    if (window["common"] != null) {
       /** proudsmart手机端口应用入口 */
-      window.createTracker = factory.call(window, window.common);
+      window.createTracker = factory.call(window, window.common)
+
+    } else {
+      window.createTracker = function (service) {
+        return factory.call(window, service)
+      };
     }
   }
   if (typeof module != "undefined") {
@@ -18,13 +23,9 @@
       return service;
     };
   } else {
-    if (window.location.hostname == "localhost") {
-      createAjax = createAjaxFn(
-        window.location.protocol + "//" + window.location.host
-      );
-    } else {
-      createAjax = createAjaxFn(service.origin);
-    }
+    createAjax = createAjaxFn(
+      window.location.protocol + "//" + window.location.host
+    );
   }
 
   function stringify(obj) {
@@ -423,6 +424,7 @@
                         if (fd) {
                           ticket.extra = extraData;
                           fd.data = ticket;
+
                           return fd;
                         }
                       }
