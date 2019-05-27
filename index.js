@@ -389,6 +389,24 @@
     };
     return new ExtraDataGetter(ticketNo);
   }
+  /* 
+    function TicketList(arr) {
+      arr = arr || [];
+      [].push.apply(this, arr);
+      this.length = arr.length;
+    }
+    TicketList.prototype.getFlow = function () {
+      return this.flows;
+    }
+    TicketList.prototype.filter = [].filter;
+    TicketList.prototype.find = [].find;
+    TicketList.prototype.map = [].map;
+    TicketList.prototype.reduce = [].reduce;
+    TicketList.prototype.push = [].push;
+    TicketList.prototype.pop = [].pop;
+    TicketList.prototype.concat = [].concat;
+    TicketList.prototype.shift = [].concat;
+    TicketList.prototype.unshift = [].unshift; */
 
   function createTaskGetter(ticketNo) {
     function TaskGetter(ticketNo) {
@@ -406,7 +424,7 @@
             ticketNo,
             ticketList,
             bind(this, function (extraData) {
-              this.getFlowChart(
+              this.getTaskListByFlowChart(
                 ticketNo,
                 bind(this, function (flowChart) {
                   if (flowChart == null) {
@@ -424,7 +442,6 @@
                         if (fd) {
                           ticket.extra = extraData;
                           fd.data = ticket;
-
                           return fd;
                         }
                       }
@@ -444,8 +461,8 @@
     TaskGetter.prototype.getExtraData = function (ticketNo, ticketList, callback) {
       this.extraDataGetter.getExtraData(ticketNo, ticketList, callback);
     };
-    TaskGetter.prototype.getFlowChart = function (ticketNo, callback) {
-      this.flowGetter.getFlowChart(ticketNo, callback);
+    TaskGetter.prototype.getTaskListByFlowChart = function (ticketNo, callback) {
+      this.flowGetter.getTaskListByFlowChart(ticketNo, callback);
     };
     TaskGetter.prototype.getAllTasks = function (callback) {
       /** 目前只支持一个源头调用合并的情况 */
@@ -506,7 +523,7 @@
       this.ticketNo = ticketNo;
       this.ajax = createAjax();
     }
-    FlowGetter.prototype.getFlowChart = function (ticketNo, callback) {
+    FlowGetter.prototype.getTaskListByFlowChart = function (ticketNo, callback) {
       runBySequence(
         [
           bind(this, function (ticketNo, next, error) {
@@ -581,6 +598,7 @@
                   })
                   .map(function (cell) {
                     return {
+                      flow: flow,
                       content: cell.content,
                       render: eval("(" + cell.dataExtractExpression + ")")
                     };

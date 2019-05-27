@@ -5,7 +5,7 @@ const {
         devtool: 'inline-source-map',
         mode: "development",
         devServer: {
-            open: false,
+            open: true,
             openPage: "test.html",
             contentBase: "./",
             inline: true,
