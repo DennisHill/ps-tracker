@@ -444,7 +444,7 @@
                     return callback.call();
                   }
                   ticketList = ticketList
-                    .map(function(ticket) {
+                    .map(function(ticket, i) {
                       var taskConfigName =
                           ticket.ticketTask && ticket.ticketTask.taskConfigName,
                         fd;
@@ -454,6 +454,8 @@
                         });
                         if (fd) {
                           ticket.extra = extraData;
+                          fd.prev = ticketList[i - 1] || null;
+                          fd.next = ticketList[i + 1] || null;
                           fd.data = ticket;
                           return fd;
                         }
@@ -481,33 +483,59 @@
     TaskGetter.prototype.getTaskListByFlowChart = function(ticketNo, callback) {
       this.flowGetter.getTaskListByFlowChart(ticketNo, callback);
     };
-    TaskGetter.prototype.getAllTasks = function(callback) {
-      /** 目前只支持一个源头调用合并的情况 */
+    TaskGetter.prototype.getCurrentTask = function(callback) {
       this.getByTicketNo(
-        ticketNo,
+        this.ticketNo,
         bind(this, function(ticketList) {
           if (ticketList == null) {
             return callback.call();
           }
-          var sourceTicketNo = findValueFromList(
-            ticketList.map(function(t) {
-              return t.data;
-            }),
-            function condition(item) {
-              var val = findValue(item, "sourceTicketNo");
-              return val && val.value;
-            }
-          );
-          if (sourceTicketNo) {
-            this.getByTicketNo(sourceTicketNo, function(list) {
-              list = list || [];
-              callback(list.concat(ticketList));
-            });
-          } else {
-            callback(ticketList);
-          }
+          this.currentTasks = ticketList;
+          return callback.call(this, ticketList);
         })
       );
+    };
+    function getFromTaskByTicketNoName(ticketNumberName) {
+      return function(callback) {
+        var ticketNo = findValueFromList(
+          this.currentTasks.map(function(t) {
+            return t.data;
+          }),
+          function condition(item) {
+            var val = findValue(item, ticketNumberName);
+            return val && val.value;
+          }
+        );
+        if (ticketNo == null) {
+          return callback.call(this, []);
+        }
+        this.getByTicketNo(
+          sourceTicketNo,
+          bind(this, function(ticketList) {
+            if (ticketList == null) {
+              return callback.call(this, []);
+            }
+            return callback.call(this, ticketList);
+          })
+        );
+      };
+    }
+    TaskGetter.prototype.getSourceTask = getFromTaskByTicketNoName(
+      "sourceTicketNo"
+    );
+    TaskGetter.prototype.getNewTask = getFromTaskByTicketNoName("newTicketNo");
+    TaskGetter.prototype.getAllTasks = function(callback) {
+      /** 目前只支持一个源头调用合并的情况 */
+      this.getCurrentTask(function(ticketList) {
+        if (ticketList == null) {
+          return callback.call();
+        }
+        this.getSourceTask(function(sourceTask) {
+          this.getNewTask(function(newTasks) {
+            callback(sourceTask.concat(ticketList).concat(newTasks));
+          });
+        });
+      });
     };
     return new TaskGetter(ticketNo);
   }
