@@ -120,7 +120,9 @@
       Observer.prototype.on = function (name, fn) {
         events[name] = fn;
       };
-      Observer.prototype.emit = function (name, fn) {};
+      Observer.prototype.emit = function (name, data) {
+        events[name] && events[name](data)
+      };
       return ins;
     };
   }
@@ -209,9 +211,9 @@
   Module.prototype.createButton = function (arr) {
     var name = arr[0],
       value = arr[1];
-    $(".tle-content").on("tap", `.mui-table-view-cell #${value}`, function () {
+    mui(".tle-content").on("tap", "#" + value + ".mui-btn", bind(this, function () {
       this.observer.emit(value, this);
-    });
+    }));
     return (
       '<button type="button" class="mui-btn mui-btn-primary"id="' +
       value +
