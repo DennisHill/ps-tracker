@@ -456,8 +456,6 @@
                         });
                         if (fd) {
                           ticket.extra = extraData;
-                          fd.prev = ticketList[i - 1] || null;
-                          fd.next = ticketList[i + 1] || null;
                           fd.data = ticket;
                           return fd;
                         }
@@ -535,7 +533,13 @@
         }
         this.getSourceTask(function (sourceTask) {
           this.getNewTask(function (newTasks) {
-            callback(sourceTask.concat(ticketList).concat(newTasks));
+            let rs = sourceTask.concat(ticketList).concat(newTasks);
+            callback(rs.slice(1).reduce(function (a, b) {
+              let last = a[a.length - 1]
+              last.next = b;
+              b.prev = last;
+              return a.concat(b);
+            }, rs.slice(0, 1)));
           });
         });
       });
