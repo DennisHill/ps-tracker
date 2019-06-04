@@ -28,6 +28,16 @@
     );
   }
 
+  function clone(obj) {
+    var rs = {};
+    for (var i in obj) {
+      if (obj.hasOwnProperty(i)) {
+        rs[i] = obj[i];
+      }
+    }
+    return rs;
+  }
+
   function stringify(obj) {
     var rs;
     try {
@@ -449,15 +459,16 @@
                     .map(function (ticket, i) {
                       var taskConfigName =
                         ticket.ticketTask && ticket.ticketTask.taskConfigName,
-                        fd;
+                        fd, c;
                       if (taskConfigName) {
                         fd = flowChart.find(function (flow) {
                           return flow.content == taskConfigName;
                         });
                         if (fd) {
+                          c = clone(fd)
                           ticket.extra = extraData;
-                          fd.data = ticket;
-                          return fd;
+                          c.data = ticket;
+                          return c;
                         }
                       }
                       return;
