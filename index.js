@@ -433,6 +433,26 @@
     return new ExtraDataGetter(ticketNo);
   }
 
+  function CombineWithTicketList(flowChart, extraData) {
+    return function (ticket, i) {
+      var taskConfigName =
+        ticket.ticketTask && ticket.ticketTask.taskConfigName,
+        fd, c;
+      if (taskConfigName) {
+        fd = flowChart.find(function (flow) {
+          return flow.content == taskConfigName;
+        });
+        if (fd) {
+          c = clone(fd)
+          ticket.extra = extraData;
+          c.data = ticket;
+          return c;
+        }
+      }
+      return;
+    }
+  }
+
   function createTaskGetter(ticketNo) {
     function TaskGetter(ticketNo) {
       this.ticketNo = ticketNo;
@@ -456,23 +476,7 @@
                     return callback.call();
                   }
                   ticketList = ticketList
-                    .map(function (ticket, i) {
-                      var taskConfigName =
-                        ticket.ticketTask && ticket.ticketTask.taskConfigName,
-                        fd, c;
-                      if (taskConfigName) {
-                        fd = flowChart.find(function (flow) {
-                          return flow.content == taskConfigName;
-                        });
-                        if (fd) {
-                          c = clone(fd)
-                          ticket.extra = extraData;
-                          c.data = ticket;
-                          return c;
-                        }
-                      }
-                      return;
-                    })
+                    .map(CombineWithTicketList(flowChart, extraData))
                     .filter(function (d) {
                       return d;
                     });
@@ -538,22 +542,22 @@
     TaskGetter.prototype.getNewTask = getFromTaskByTicketNoName("newTicketNo");
     TaskGetter.prototype.getAllTasks = function (callback) {
       /** 目前只支持一个源头调用合并的情况 */
-      this.getCurrentTask(function (ticketList) {
+      this.getCurrentTask(bind(this, function (ticketList) {
         if (ticketList == null) {
           return callback.call();
         }
-        this.getSourceTask(function (sourceTask) {
-          this.getNewTask(function (newTasks) {
+        this.getSourceTask(bind(this, function (sourceTask) {
+          this.getNewTask(bind(this, function (newTasks) {
             let rs = sourceTask.concat(ticketList).concat(newTasks);
-            callback(rs.slice(1).reduce(function (a, b) {
+            callback.call(this, rs.slice(1).reduce(function (a, b) {
               let last = a[a.length - 1]
               last.next = b;
               b.prev = last;
               return a.concat(b);
             }, rs.slice(0, 1)));
-          });
-        });
-      });
+          }));
+        }));
+      }));
     };
     return new TaskGetter(ticketNo);
   }
@@ -579,6 +583,37 @@
       }
     }
     runSeq(0, param);
+  }
+
+  function explainFlowDefinition(flowName, callback) {
+    return bind(this, function (flows) {
+      var flow = flows.find(function (flow) {
+          return flow.name == flowName;
+        }),
+        viewContent;
+      if (flow) {
+        viewContent = parse(flow.viewContent);
+        callback && callback.call(this,
+          viewContent &&
+          viewContent.cells
+          .filter(function (cell) {
+            return (
+              cell.type == "bpmn.Activity" &&
+              cell.dataExtractExpression
+            );
+          })
+          .map(function (cell) {
+            return {
+              flow: flow,
+              content: cell.content,
+              render: eval("(" + cell.dataExtractExpression + ")")
+            };
+          })
+        );
+      } else {
+        callback && callback.call(this);
+      }
+    })
   }
 
   function createFlowGetter(ticketNo) {
@@ -643,34 +678,7 @@
           }
           this.ajax.post(
             "workflowDefinitionService.getWorkflowDefinitions",
-            function success(flows) {
-              var flow = flows.find(function (flow) {
-                  return flow.name == flowName;
-                }),
-                viewContent;
-              if (flow) {
-                viewContent = parse(flow.viewContent);
-                callback(
-                  viewContent &&
-                  viewContent.cells
-                  .filter(function (cell) {
-                    return (
-                      cell.type == "bpmn.Activity" &&
-                      cell.dataExtractExpression
-                    );
-                  })
-                  .map(function (cell) {
-                    return {
-                      flow: flow,
-                      content: cell.content,
-                      render: eval("(" + cell.dataExtractExpression + ")")
-                    };
-                  })
-                );
-              } else {
-                callback();
-              }
-            }
+            explainFlowDefinition.call(this, flowName, callback)
           );
         }),
         ticketNo
