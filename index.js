@@ -17,7 +17,21 @@
 })(this, function (service) {
   var createAjax,
     observer = createObserver(),
-    isObject = isType("Object");
+    isObject = isType("Object"),
+    Explainer = {
+      tallyCheck: function (val) {
+        return ["通过", "不通过"][val] || "-";
+      },
+      statusGrade: function (val) {
+        return ["正常", "注意", "警告", "告警"][val] || "正常";
+      },
+      tallyEvaluateCheckboxlist: function (val) {
+        return ["正确", "基本正确", "不正确"][val] || "-";
+      },
+      abnormalEvaluateCheckboxlist: function (val) {
+        return ["有效", "无效"][val] || "-";
+      }
+    };
   if (typeof service.post == "function") {
     createAjax = function () {
       return service;
@@ -188,20 +202,8 @@
       })
     );
   };
-  var Explainer = {
-    tallyCheck(val) {
-      return ["通过", "不通过"][val] || "-";
-    },
-    statusGrade(val) {
-      return ["正常", "注意", "警告", "告警"][val] || "正常";
-    },
-    tallyEvaluateCheckboxlist(val) {
-      return ["正确", "基本正确", "不正确"][val] || "-";
-    },
-    abnormalEvaluateCheckboxlist(val) {
-      return ["有效", "无效"][val] || "-";
-    }
-  };
+
+  /** 节点对象的方法在这个类下面扩展 */
 
   function Module(data) {
     for (var i in data) {
@@ -218,7 +220,9 @@
   Module.prototype.createAttr = function (arr) {
     var name = arr[0],
       value = arr[1],
-      exp = Explainer[value] || function (v) {
+      exp =
+      Explainer[value] ||
+      function (v) {
         return v;
       };
     var val = findValue(this, value);
@@ -228,7 +232,9 @@
   Module.prototype.findAttr = function (arr) {
     var name = arr[0],
       value = arr[1],
-      exp = Explainer[value] || function (v) {
+      exp =
+      Explainer[value] ||
+      function (v) {
         return v;
       };
     var val = findValue(this, value);
@@ -475,6 +481,32 @@
     return new ExtraDataGetter(ticketNo);
   }
 
+  function qualifiedNode(node) {
+    return node.content == "待维护" || node.content == "待处理";
+  }
+
+  function findNodeFromRight(arr) {
+    var i = arr.length - 1;
+    while (i > -1) {
+      if (qualifiedNode(arr[i])) {
+        return [arr[i]];
+      }
+      i--;
+    }
+    return [];
+  }
+
+  function findNodeFromLeft(arr) {
+    var i = 0;
+    while (i < arr.length) {
+      if (qualifiedNode(arr[i])) {
+        return [arr[i]];
+      }
+      i++;
+    }
+    return [];
+  }
+
   function CombineWithTicketList(flowChart, extraData) {
     return function (ticket, i) {
       var taskConfigName =
@@ -594,11 +626,13 @@
             bind(this, function (sourceTask) {
               this.getNewTask(
                 bind(this, function (newTasks) {
-                  let rs = sourceTask.concat(ticketList).concat(newTasks);
+                  var rs = findNodeFromRight(sourceTask)
+                    .concat(ticketList)
+                    .concat(findNodeFromLeft(newTasks));
                   callback.call(
                     this,
                     rs.slice(1).reduce(function (a, b) {
-                      let last = a[a.length - 1];
+                      var last = a[a.length - 1];
                       last.next = b;
                       b.prev = last;
                       return a.concat(b);
@@ -617,7 +651,7 @@
   function runBySequence(queue, callback, param) {
     function runSeq(inx, param) {
       if (inx < queue.length) {
-        fn = queue[inx];
+        var fn = queue[inx];
         fn &&
           fn.call(
             undefined,
