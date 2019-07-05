@@ -474,10 +474,14 @@
     ExtraDataGetter.prototype.getExtraData = function (
       ticketNo,
       ticketList,
+      isFromCurrentNode,
       callback
     ) {
       getDataSeries(
         [
+          bind(this, function (next) {
+            next("isFromCurrentNode", isFromCurrentNode);
+          }),
           bind(this, function (next) {
             var params = {
               ticketNo: ticketNo
@@ -565,7 +569,8 @@
       this.flowGetter = createFlowGetter(ticketNo);
       this.extraDataGetter = createExtraDataGetter(ticketNo);
     }
-    TaskGetter.prototype.getByTicketNo = function (ticketNo, callback) {
+    TaskGetter.prototype.getByTicketNo = function (ticketNo, callback, isFromCurrentNode) {
+      isFromCurrentNode = isFromCurrentNode == null ? true : isFromCurrentNode;
       this.ajax.post(
         "ticketLogService.getByTicketNo",
         ticketNo,
@@ -573,6 +578,7 @@
           this.getExtraData(
             ticketNo,
             ticketList,
+            isFromCurrentNode,
             bind(this, function (extraData) {
               this.getTaskListByFlowChart(
                 ticketNo,
@@ -596,9 +602,10 @@
     TaskGetter.prototype.getExtraData = function (
       ticketNo,
       ticketList,
+      isFromCurrentNode,
       callback
     ) {
-      this.extraDataGetter.getExtraData(ticketNo, ticketList, callback);
+      this.extraDataGetter.getExtraData(ticketNo, ticketList, isFromCurrentNode, callback);
     };
     TaskGetter.prototype.getTaskListByFlowChart = function (ticketNo, callback) {
       this.flowGetter.getTaskListByFlowChart(ticketNo, callback);
@@ -637,7 +644,7 @@
               return callback.call(this, []);
             }
             return callback.call(this, ticketList);
-          })
+          }), false
         );
       };
     }
