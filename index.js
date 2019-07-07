@@ -504,7 +504,11 @@
               "resourceUIService.getResourceById",
               params,
               function (d) {
-                next("device", d);
+                next("device", {
+                  id: d.id,
+                  label: d.label,
+                  externalDevId: d.externalDevId
+                });
               }
             );
           })
