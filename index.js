@@ -553,7 +553,7 @@
         c;
       if (taskConfigName) {
         fd = flowChart.find(function (flow) {
-          return flow.content == taskConfigName;
+          return taskConfigName.startsWith(flow.content);
         });
         if (fd) {
           c = clone(fd);
